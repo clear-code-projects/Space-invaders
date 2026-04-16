@@ -8,9 +8,14 @@ class Player(pygame.sprite.Sprite):
 		self.rect = self.image.get_rect(midbottom = pos)
 		self.speed = speed
 		self.max_x_constraint = constraint
+
 		self.ready = True
 		self.laser_time = 0
 		self.laser_cooldown = 600
+
+		self.shotgun_ready = True
+		self.shotgun_time = 0
+		self.shotgun_cooldown = 1500
 
 		self.lasers = pygame.sprite.Group()
 
@@ -31,11 +36,22 @@ class Player(pygame.sprite.Sprite):
 			self.laser_time = pygame.time.get_ticks()
 			self.laser_sound.play()
 
+		if keys[pygame.K_x] and self.shotgun_ready:
+			self.shoot_shotgun()
+			self.shotgun_ready = False
+			self.shotgun_time = pygame.time.get_ticks()
+			self.laser_sound.play()
+
 	def recharge(self):
 		if not self.ready:
 			current_time = pygame.time.get_ticks()
 			if current_time - self.laser_time >= self.laser_cooldown:
 				self.ready = True
+
+		if not self.shotgun_ready:
+			current_time = pygame.time.get_ticks()
+			if current_time - self.shotgun_time >= self.shotgun_cooldown:
+				self.shotgun_ready = True
 
 	def constraint(self):
 		if self.rect.left <= 0:
@@ -45,6 +61,11 @@ class Player(pygame.sprite.Sprite):
 
 	def shoot_laser(self):
 		self.lasers.add(Laser(self.rect.center,-8,self.rect.bottom))
+
+	def shoot_shotgun(self):
+		self.lasers.add(Laser(self.rect.center,-8,self.rect.bottom))
+		self.lasers.add(Laser(self.rect.center,-8,self.rect.bottom,speed_x=-4))
+		self.lasers.add(Laser(self.rect.center,-8,self.rect.bottom,speed_x=4))
 
 	def update(self):
 		self.get_input()
